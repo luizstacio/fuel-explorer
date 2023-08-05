@@ -1,0 +1,219 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contract {
+  db_id            Int               @id @default(autoincrement())
+  id               String            @unique
+  bytecode         String
+  salt             String            @unique
+  InputContract    InputContract[]
+  ContractCreated  ContractCreated[]
+  Transaction      Transaction?      @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+
+  @@index([id], name: "contract_id")
+}
+
+model Block {
+  db_id         Int             @id @default(autoincrement())
+  id            String          @unique
+  transactions  Transaction[]
+  FailureStatus FailureStatus[]
+  SuccessStatus SuccessStatus[]
+}
+
+// ##########################################################
+// ## Transaction =>> Inputs
+// ##########################################################
+
+model InputCoin {
+  db_id            Int          @id @default(autoincrement())
+  utxoId           String
+  owner            String
+  amount           String
+  assetId          String
+  txPointer        String
+  witnessIndex     Int
+  maturity         String
+  predicate        String
+  predicateData    String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+model InputContract {
+  db_id            Int          @id @default(autoincrement())
+  utxoId           String
+  balanceRoot      String
+  stateRoot        String
+  txPointer        String
+  contractId       Int
+  contract         Contract     @relation(fields: [contractId], references: [db_id])
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+model InputMessage {
+  db_id            Int          @id @default(autoincrement())
+  messageId        String
+  sender           String
+  recipient        String
+  amount           String
+  nonce            String
+  witnessIndex     Int
+  data             String
+  predicate        String
+  predicateData    String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+// ##########################################################
+// ## Transaction =>> Outputs
+// ##########################################################
+
+model ChangeOutput {
+  db_id            Int          @id @default(autoincrement())
+  to               String
+  amount           String
+  assetId          String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+model CoinOutput {
+  db_id            Int          @id @default(autoincrement())
+  to               String
+  amount           String
+  assetId          String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+model ContractCreated {
+  db_id            Int          @id @default(autoincrement())
+  contractId       Int
+  contract         Contract     @relation(fields: [contractId], references: [db_id])
+  stateRoot        String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+model ContractOutput {
+  db_id            Int          @id @default(autoincrement())
+  inputIndex       Int
+  balanceRoot      String
+  stateRoot        String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+model VariableOutput {
+  db_id            Int          @id @default(autoincrement())
+  to               String
+  amount           String
+  assetId          String
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+// ##########################################################
+// ## Transaction =>> Metadata
+// ##########################################################
+
+model ProgramState {
+  db_id         Int             @id @default(autoincrement())
+  returnType    String
+  data          String
+  FailureStatus FailureStatus[]
+  SuccessStatus SuccessStatus[]
+}
+
+model SqueezedOutStatus {
+  db_id       Int           @id @default(autoincrement())
+  reason      String
+  Transaction Transaction[]
+}
+
+model SubmittedStatus {
+  db_id       Int           @id @default(autoincrement())
+  time        String
+  Transaction Transaction[]
+}
+
+model FailureStatus {
+  db_id             Int           @id @default(autoincrement())
+  block             Block         @relation(fields: [blockDb_id], references: [db_id])
+  time              String
+  reason            String
+  programStateDb_id Int
+  programState      ProgramState  @relation(fields: [programStateDb_id], references: [db_id])
+  blockDb_id        Int
+  Transaction       Transaction[]
+}
+
+model SuccessStatus {
+  db_id             Int           @id @default(autoincrement())
+  block             Block         @relation(fields: [blockDb_id], references: [db_id])
+  time              String
+  programStateDb_id Int
+  programState      ProgramState  @relation(fields: [programStateDb_id], references: [db_id])
+  blockDb_id        Int
+  Transaction       Transaction[]
+}
+
+// ##########################################################
+// ## Transaction
+// ##########################################################
+
+model Transaction {
+  db_id                     Int                @id @default(autoincrement())
+  id                        String             @unique
+  inputAssetIds             String[]
+  inputContracts            Contract[]
+  gasPrice                  String?
+  gasLimit                  String?
+  maturity                  String?
+  txPointer                 String?
+  isScript                  Boolean            @default(false)
+  isCreate                  Boolean            @default(false)
+  isMint                    Boolean            @default(false)
+  witnesses                 String[]
+  inputs__InputCoin         InputCoin[]
+  inputs__InputContract     InputContract[]
+  inputs__InputMessage      InputMessage[]
+  outputs__ChangeOutput     ChangeOutput[]
+  outputs__CoinOutput       CoinOutput[]
+  outputs__ContractCreated  ContractCreated[]
+  outputs__ContractOutput   ContractOutput[]
+  outputs__VariableOutput   VariableOutput[]
+  receiptsRoot              String?
+  script                    String?
+  scriptData                String?
+  bytecodeWitnessIndex      Int?
+  bytecodeLength            String?
+  salt                      String?
+  rawPayload                String
+  storageSlots              String[]
+  status__SqueezedOutStatus SqueezedOutStatus? @relation(fields: [squeezedOutStatusDb_id], references: [db_id])
+  status__SubmittedStatus   SubmittedStatus?   @relation(fields: [submittedStatusDb_id], references: [db_id])
+  status__FailureStatus     FailureStatus?     @relation(fields: [failureStatusDb_id], references: [db_id])
+  status__SuccessStatus     SuccessStatus?     @relation(fields: [successStatusDb_id], references: [db_id])
+  squeezedOutStatusDb_id    Int?
+  submittedStatusDb_id      Int?
+  failureStatusDb_id        Int?
+  successStatusDb_id        Int?
+  Block                     Block?             @relation(fields: [blockDb_id], references: [db_id])
+  blockDb_id                Int?
+
+  @@index([id])
+}

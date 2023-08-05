@@ -20,23 +20,23 @@ services:
       timeout: 5s
       retries: 20
 
-  # fuel-explorer-pgsql:
-  #   platform: linux/amd64
-  #   container_name: fuel-explorer-pgsql
-  #   image: postgres:latest
-  #   ports:
-  #     - "5435:5432"
-  #   volumes:
-  #     - fuel-explorer-db:/usr/local/postgres
-  #   environment:
-  #     - POSTGRES_PASSWORD=postgres
-  #     - PGUSER=postgres
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready", "-U", "postgres", "-d", "postgres"]
-  #     interval: 30s
-  #     timeout: 60s
-  #     retries: 5
-  #     start_period: 80s
+  fuel-explorer-pgsql:
+    platform: linux/amd64
+    container_name: fuel-explorer-pgsql
+    image: postgres:latest
+    ports:
+      - "5435:5432"
+    volumes:
+      - fuel-explorer-db:/usr/local/postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - PGUSER=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
 
   # fuel-explorer-indexer:
   #   platform: linux/amd64
@@ -56,6 +56,6 @@ services:
   #     - fuel-explorer-core
 
 volumes:
-  # fuel-explorer-db:
   # fuel-explorer-indexer-db:
+  fuel-explorer-db:
   fuel-explorer-core-db:
