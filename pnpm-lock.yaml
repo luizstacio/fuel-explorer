@@ -50,6 +50,9 @@ importers:
       graphql-playground-middleware-express:
         specifier: ^1.7.23
         version: 1.7.23(express@4.18.2)
+      graphql-tag:
+        specifier: ^2.12.6
+        version: 2.12.6(graphql@16.7.1)
       lodash.clonedeep:
         specifier: ^4.5.0
         version: 4.5.0
@@ -1100,6 +1103,16 @@ packages:
     dependencies:
       express: 4.18.2
       graphql-playground-html: 1.6.30
+    dev: false
+
+  /graphql-tag@2.12.6(graphql@16.7.1):
+    resolution: {integrity: sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      graphql: ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+    dependencies:
+      graphql: 16.7.1
+      tslib: 2.6.1
     dev: false
 
   /graphql-ws@5.14.0(graphql@16.7.1):

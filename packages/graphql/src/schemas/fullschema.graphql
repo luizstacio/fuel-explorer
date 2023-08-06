@@ -324,11 +324,6 @@ type MessageEdge {
   node: Message!
 }
 
-type MessageOutput {
-  recipient: Address!
-  amount: U64!
-}
-
 type MessageProof {
   proofSet: [Bytes32!]!
   proofIndex: U64!
@@ -445,6 +440,11 @@ union TransactionStatus =
 ##########################################################
 ## Transaction =>> Outputs
 ##########################################################
+
+type MessageOutput {
+  recipient: Address!
+  amount: U64!
+}
 
 type ChangeOutput {
   to: Address!

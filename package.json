@@ -26,6 +26,7 @@
     "node:restart": "make -C ./docker restart",
     "node:logs": "make -C ./docker logs",
     "dev": "run-s node:start && pnpm --filter=graphql dev",
+    "dev:debug": "pnpm --filter=graphql dev",
     "dev:indexer": "pnpm --filter=indexer dev",
     "clean:indexer": "pnpm --filter=indexer clean",
     "deploy:indexer": "pnpm --filter=indexer run deploy"

@@ -1,0 +1,228 @@
+scalar Address
+scalar AssetId
+scalar BlockId
+scalar Bytes32
+scalar ContractId
+scalar HexString
+scalar MessageId
+scalar Salt
+scalar Signature
+scalar Tai64Timestamp
+scalar TransactionId
+scalar TxPointer
+scalar U64
+scalar UtxoId
+
+type Contract {
+  id: ContractId!
+  bytecode: HexString!
+  salt: Salt!
+}
+
+type Block {
+  id: BlockId!
+  #   header: Header!
+  #   consensus: Consensus!
+  transactions: [Transaction!]!
+}
+
+##########################################################
+## Transaction
+##########################################################
+
+type Transaction {
+  id: TransactionId!
+  inputAssetIds: [AssetId!]
+  inputContracts: [Contract!]
+  gasPrice: U64
+  gasLimit: U64
+  maturity: U64
+  txPointer: TxPointer
+  isScript: Boolean!
+  isCreate: Boolean!
+  isMint: Boolean!
+  inputs: [Input!]
+  outputs: [Output!]!
+  witnesses: [HexString!]
+  receiptsRoot: Bytes32
+  status: TransactionStatus
+  # receipts: [Receipt!]
+  script: HexString
+  scriptData: HexString
+  bytecodeWitnessIndex: Int
+  bytecodeLength: U64
+  salt: Salt
+  storageSlots: [HexString!]
+
+  # Return the transaction bytes using canonical encoding
+  rawPayload: HexString!
+}
+
+##########################################################
+## Transaction =>> Metadata
+##########################################################
+
+enum ReturnType {
+  RETURN
+  RETURN_DATA
+  REVERT
+}
+
+type ProgramState {
+  returnType: ReturnType!
+  data: HexString!
+}
+
+type SqueezedOutStatus {
+  reason: String!
+}
+
+type SubmittedStatus {
+  time: Tai64Timestamp!
+}
+
+type FailureStatus {
+  block: Block!
+  time: Tai64Timestamp!
+  reason: String!
+  programState: ProgramState
+}
+
+type SuccessStatus {
+  block: Block!
+  time: Tai64Timestamp!
+  programState: ProgramState
+}
+
+input TimeParameters {
+  # The time to set on the first block
+  startTime: U64!
+
+  # The time interval between subsequent blocks
+  blockTimeInterval: U64!
+}
+
+union TransactionStatus =
+    SubmittedStatus
+  | SuccessStatus
+  | SqueezedOutStatus
+  | FailureStatus
+
+##########################################################
+## Transaction =>> Outputs
+##########################################################
+
+type MessageOutput {
+  recipient: Address!
+  amount: U64!
+}
+
+type ChangeOutput {
+  to: Address!
+  amount: U64!
+  assetId: AssetId!
+}
+
+type CoinOutput {
+  to: Address!
+  amount: U64!
+  assetId: AssetId!
+}
+
+type ContractCreated {
+  contract: Contract!
+  stateRoot: Bytes32!
+}
+
+type ContractOutput {
+  inputIndex: Int!
+  balanceRoot: Bytes32!
+  stateRoot: Bytes32!
+}
+
+type VariableOutput {
+  to: Address!
+  amount: U64!
+  assetId: AssetId!
+}
+
+union Output =
+    CoinOutput
+  | ContractOutput
+  | MessageOutput
+  | ChangeOutput
+  | VariableOutput
+  | ContractCreated
+
+##########################################################
+## Transaction =>> Inputs
+##########################################################
+
+union Input = InputCoin | InputContract | InputMessage
+
+type InputCoin {
+  utxoId: UtxoId!
+  owner: Address!
+  amount: U64!
+  assetId: AssetId!
+  txPointer: TxPointer!
+  witnessIndex: Int!
+  maturity: U64!
+  predicate: HexString!
+  predicateData: HexString!
+}
+
+type InputContract {
+  utxoId: UtxoId!
+  balanceRoot: Bytes32!
+  stateRoot: Bytes32!
+  txPointer: TxPointer!
+  contract: Contract!
+}
+
+type InputMessage {
+  messageId: MessageId!
+  sender: Address!
+  recipient: Address!
+  amount: U64!
+  nonce: U64!
+  witnessIndex: Int!
+  data: HexString!
+  predicate: HexString!
+  predicateData: HexString!
+}
+
+##########################################################
+## Query
+##########################################################
+
+# Information about pagination in a connection
+type PageInfo {
+  # When paginating backwards, are there more items?
+  hasPreviousPage: Boolean!
+
+  # When paginating forwards, are there more items?
+  hasNextPage: Boolean!
+
+  # When paginating backwards, the cursor to continue.
+  startCursor: String
+
+  # When paginating forwards, the cursor to continue.
+  endCursor: String
+}
+
+type Query {
+  transactions(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): PageResult<Transaction!> @query(table: "Transaction", paginate: true)
+
+  blocks(
+    first: Int
+    after: String
+    last: Int
+    before: String
+  ): PageResult<Block!> @query(table: "Block", paginate: true)
+}

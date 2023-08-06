@@ -14,113 +14,116 @@ const xprisma = prisma.$extends({
   },
 });
 
+// @graphql-tools/schema
+
 async function main() {
-  type TXCreate = Parameters<typeof prisma.transaction.create>[0]["data"];
-  const txs = [JSONData.data.transactions.nodes[0]].map((item) => {
-    // const tx: TXCreate = {
-    //   id: item.id,
-    //   inputAssetIds: item.inputAssetIds || [],
-    //   inputContracts: {
-    //     connectOrCreate: (item.inputContracts || []).map((ic) => ({
-    //       where: { id: ic.id, salt: ic.id },
-    //       create: ic,
-    //     })),
-    //   },
-    //   gasPrice: item.gasPrice || "0",
-    //   gasLimit: item.gasLimit || "0",
-    //   maturity: item.maturity || "0",
-    //   txPointer: item.txPointer,
-    //   isScript: item.isScript,
-    //   isCreate: item.isCreate,
-    //   isMint: item.isMint,
-    //   witnesses: item.witnesses || [],
-    //   receiptsRoot: item.receiptsRoot,
-    //   script: item.script,
-    //   scriptData: item.scriptData,
-    //   bytecodeWitnessIndex: item.bytecodeWitnessIndex,
-    //   bytecodeLength: item.bytecodeLength,
-    //   salt: item.salt,
-    //   rawPayload: item.rawPayload,
-    // };
-    const tx: TXCreate = {
-      id: item.id,
-      inputAssetIds: item.inputAssetIds || [],
-      inputContracts: {
-        connectOrCreate: (item.inputContracts || []).map((ic) => ({
-          where: { id: ic.id, salt: ic.id },
-          create: ic,
-        })),
-      },
-      gasPrice: item.gasPrice || "0",
-      gasLimit: item.gasLimit || "0",
-      maturity: item.maturity || "0",
-      txPointer: item.txPointer,
-      isScript: item.isScript,
-      isCreate: item.isCreate,
-      isMint: item.isMint,
-      witnesses: item.witnesses || [],
-      receiptsRoot: item.receiptsRoot,
-      script: item.script,
-      scriptData: item.scriptData,
-      bytecodeWitnessIndex: item.bytecodeWitnessIndex,
-      bytecodeLength: item.bytecodeLength,
-      salt: item.salt,
-      rawPayload: item.rawPayload,
-    };
-    (item.inputs || []).map((input) => {
-      const inputsCreate = tx[`inputs__${input.type}`] || {
-        create: [],
-      };
+  console.time("prisma");
+  // type TXCreate = Parameters<typeof prisma.transaction.create>[0]["data"];
+  // const txs = [JSONData.data.transactions.nodes[0]].map((item) => {
+  //   // const tx: TXCreate = {
+  //   //   id: item.id,
+  //   //   inputAssetIds: item.inputAssetIds || [],
+  //   //   inputContracts: {
+  //   //     connectOrCreate: (item.inputContracts || []).map((ic) => ({
+  //   //       where: { id: ic.id, salt: ic.id },
+  //   //       create: ic,
+  //   //     })),
+  //   //   },
+  //   //   gasPrice: item.gasPrice || "0",
+  //   //   gasLimit: item.gasLimit || "0",
+  //   //   maturity: item.maturity || "0",
+  //   //   txPointer: item.txPointer,
+  //   //   isScript: item.isScript,
+  //   //   isCreate: item.isCreate,
+  //   //   isMint: item.isMint,
+  //   //   witnesses: item.witnesses || [],
+  //   //   receiptsRoot: item.receiptsRoot,
+  //   //   script: item.script,
+  //   //   scriptData: item.scriptData,
+  //   //   bytecodeWitnessIndex: item.bytecodeWitnessIndex,
+  //   //   bytecodeLength: item.bytecodeLength,
+  //   //   salt: item.salt,
+  //   //   rawPayload: item.rawPayload,
+  //   // };
+  //   const tx: TXCreate = {
+  //     id: item.id,
+  //     inputAssetIds: item.inputAssetIds || [],
+  //     inputContracts: {
+  //       connectOrCreate: (item.inputContracts || []).map((ic) => ({
+  //         where: { id: ic.id, salt: ic.id },
+  //         create: ic,
+  //       })),
+  //     },
+  //     gasPrice: item.gasPrice || "0",
+  //     gasLimit: item.gasLimit || "0",
+  //     maturity: item.maturity || "0",
+  //     txPointer: item.txPointer,
+  //     isScript: item.isScript,
+  //     isCreate: item.isCreate,
+  //     isMint: item.isMint,
+  //     witnesses: item.witnesses || [],
+  //     receiptsRoot: item.receiptsRoot,
+  //     script: item.script,
+  //     scriptData: item.scriptData,
+  //     bytecodeWitnessIndex: item.bytecodeWitnessIndex,
+  //     bytecodeLength: item.bytecodeLength,
+  //     salt: item.salt,
+  //     rawPayload: item.rawPayload,
+  //   };
+  //   (item.inputs || []).map((input) => {
+  //     const inputsCreate = tx[`inputs__${input.type}`] || {
+  //       create: [],
+  //     };
 
-      if (input.type === "InputContract" && input.contract) {
-        input.contract = {
-          connectOrCreate: {
-            where: { id: input.contract.id, salt: input.contract.salt },
-            create: input.contract,
-          },
-        } as any;
-      }
+  //     if (input.type === "InputContract" && input.contract) {
+  //       input.contract = {
+  //         connectOrCreate: {
+  //           where: { id: input.contract.id, salt: input.contract.salt },
+  //           create: input.contract,
+  //         },
+  //       } as any;
+  //     }
 
-      inputsCreate.create.push({
-        ...input,
-        type: undefined,
-      });
-      tx[`inputs__${input.type}`] = inputsCreate;
-    });
-    (item.outputs || []).map((output) => {
-      const outputsCreate = tx[`outputs__${output.type}`] || {
-        create: [],
-      };
-      outputsCreate.create.push({
-        ...output,
-        type: undefined,
-      });
-      tx[`outputs__${output.type}`] = outputsCreate;
-    });
-    tx[`status__${item.status.type}`] = {
-      create: {
-        ...item.status,
-        block: item.status.block
-          ? ({
-              connectOrCreate: {
-                where: { id: item.status.block.id },
-                create: item.status.block,
-              },
-            } as any)
-          : undefined,
-        programState: item.status.programState
-          ? {
-              create: item.status.programState,
-            }
-          : undefined,
-        type: undefined,
-      },
-    };
+  //     inputsCreate.create.push({
+  //       ...input,
+  //       type: undefined,
+  //     });
+  //     tx[`inputs__${input.type}`] = inputsCreate;
+  //   });
+  //   (item.outputs || []).map((output) => {
+  //     const outputsCreate = tx[`outputs__${output.type}`] || {
+  //       create: [],
+  //     };
+  //     outputsCreate.create.push({
+  //       ...output,
+  //       type: undefined,
+  //     });
+  //     tx[`outputs__${output.type}`] = outputsCreate;
+  //   });
+  //   tx[`status__${item.status.type}`] = {
+  //     create: {
+  //       ...item.status,
+  //       block: item.status.block
+  //         ? ({
+  //             connectOrCreate: {
+  //               where: { id: item.status.block.id },
+  //               create: item.status.block,
+  //             },
+  //           } as any)
+  //         : undefined,
+  //       programState: item.status.programState
+  //         ? {
+  //             create: item.status.programState,
+  //           }
+  //         : undefined,
+  //       type: undefined,
+  //     },
+  //   };
 
-    // console.dir(tx, { depth: null });
+  //   // console.dir(tx, { depth: null });
 
-    return tx;
-  });
+  //   return tx;
+  // });
 
   // const root = await prisma.transaction.create({
   //   data: txs[0] as any,
@@ -147,6 +150,7 @@ async function main() {
       status__SuccessStatus: true,
     },
   });
+  console.timeEnd("prisma");
   console.dir(transactions, { depth: null });
 }
 

@@ -1,7 +1,8 @@
 import cors from "cors";
 import express from "express";
 import expressPlayground from "graphql-playground-middleware-express";
-import { startGraphql } from "~/startGraphql";
+// import { startGraphql } from "~/startGraphql";
+import { startGraphql } from "~/dbschema";
 
 // Create a server:
 const app = express();

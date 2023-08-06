@@ -5,7 +5,8 @@
   "private": true,
   "author": "Fuel Labs <contact@fuel.sh> (https://fuel.network/)",
   "scripts": {
-    "dev": "ts-node-dev -r tsconfig-paths/register --transpile-only --watch ./src/**/*, src/index.ts"
+    "dev": "ts-node-dev -r tsconfig-paths/register --transpile-only --watch ./src/**/*, src/index.ts",
+    "dev:debug": "ts-node-dev -r tsconfig-paths/register --transpile-only --respawn --inspect=4321 --watch ./src/**/*, src/index.ts"
   },
   "license": "Apache-2.0",
   "dependencies": {
@@ -21,6 +22,7 @@
     "graphql": "^16.7.1",
     "graphql-http": "^1.21.0",
     "graphql-playground-middleware-express": "^1.7.23",
+    "graphql-tag": "^2.12.6",
     "lodash.clonedeep": "^4.5.0",
     "prisma": "^5.1.1",
     "typescript": "^5.1.6"
