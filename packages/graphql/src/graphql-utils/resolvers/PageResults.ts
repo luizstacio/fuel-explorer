@@ -44,6 +44,7 @@ export class PageResults {
       });
       const nodesLength = result.length;
       const nodes = result.slice(0, first);
+
       const pageInfo: PageInfo = {
         hasNextPage: nodesLength > first,
         hasPreviousPage: false,

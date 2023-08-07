@@ -39,3 +39,26 @@ export function getIncludes(
       return acc;
     }, {});
 }
+
+export function getFields(
+  prisma: PrismaClient,
+  table: string,
+  maxDepth: number = 1,
+  parent: string = "",
+  deth: number = 0
+) {
+  const dataModel: DataModel = (prisma as any)._runtimeDataModel;
+  const { fields } = dataModel.models[table];
+  return fields.reduce((acc, f) => {
+    if (parent !== f.type && !/^[A-Z]/.test(f.name)) {
+      if (deth < maxDepth) {
+        acc[f.name] = {
+          include: getIncludes(prisma, f.type, maxDepth, table, deth + 1),
+        };
+      } else {
+        acc[f.name] = {};
+      }
+    }
+    return acc;
+  }, {});
+}

@@ -30,6 +30,8 @@ model Contract {
   ContractCreated  ContractCreated[]
   Transaction      Transaction?      @relation(fields: [transactionDb_id], references: [db_id])
   transactionDb_id Int?
+  ReceiptContract  Receipt[]         @relation("ReceiptContract")
+  ReceiptTo        Receipt[]         @relation("ReceiptTo")
 
   @@index([id], name: "contract_id")
 }
@@ -37,6 +39,8 @@ model Contract {
 model Block {
   db_id         Int             @id @default(autoincrement())
   id            String          @unique
+  header        Json
+  consensus     Json
   transactions  Transaction[]
   FailureStatus FailureStatus[]
   SuccessStatus SuccessStatus[]
@@ -143,7 +147,7 @@ model VariableOutput {
 
 model ProgramState {
   db_id         Int             @id @default(autoincrement())
-  returnType    String
+  returnType    ReturnType
   data          String
   FailureStatus FailureStatus[]
   SuccessStatus SuccessStatus[]
@@ -166,8 +170,8 @@ model FailureStatus {
   block             Block         @relation(fields: [blockDb_id], references: [db_id])
   time              String
   reason            String
-  programStateDb_id Int
-  programState      ProgramState  @relation(fields: [programStateDb_id], references: [db_id])
+  programStateDb_id Int?
+  programState      ProgramState? @relation(fields: [programStateDb_id], references: [db_id])
   blockDb_id        Int
   Transaction       Transaction[]
 }
@@ -176,10 +180,71 @@ model SuccessStatus {
   db_id             Int           @id @default(autoincrement())
   block             Block         @relation(fields: [blockDb_id], references: [db_id])
   time              String
-  programStateDb_id Int
-  programState      ProgramState  @relation(fields: [programStateDb_id], references: [db_id])
+  programStateDb_id Int?
+  programState      ProgramState? @relation(fields: [programStateDb_id], references: [db_id])
   blockDb_id        Int
   Transaction       Transaction[]
+}
+
+// ##########################################################
+// ## Transaction =>> Receipts
+// ##########################################################
+
+model Receipt {
+  db_id            Int          @id @default(autoincrement())
+  contract         Contract?    @relation("ReceiptContract", fields: [contractDb_id], references: [db_id])
+  pc               String?
+  is               String?
+  to               Contract?    @relation("ReceiptTo", fields: [contractDbTo_id], references: [db_id])
+  toAddress        String?
+  amount           String?
+  assetId          String?
+  gas              String?
+  param1           String?
+  param2           String?
+  val              String?
+  ptr              String?
+  digest           String?
+  reason           String?
+  ra               String?
+  rb               String?
+  rc               String?
+  rd               String?
+  len              String?
+  receiptType      ReceiptType
+  rawPayload       String
+  result           String?
+  gasUsed          String?
+  data             String?
+  messageId        String?
+  sender           String?
+  recipient        String?
+  nonce            String?
+  contractId       String?
+  contractDb_id    Int?
+  contractDbTo_id  Int?
+  Transaction      Transaction? @relation(fields: [transactionDb_id], references: [db_id])
+  transactionDb_id Int?
+}
+
+enum ReceiptType {
+  CALL
+  RETURN
+  RETURN_DATA
+  PANIC
+  REVERT
+  LOG
+  LOG_DATA
+  TRANSFER
+  TRANSFER_OUT
+  SCRIPT_RESULT
+  MESSAGE_OUT
+}
+
+enum ReturnType {
+  RETURN
+  RETURN_DATA
+  REVERT
 }
 
 // ##########################################################
@@ -215,6 +280,7 @@ model Transaction {
   salt                      String?
   rawPayload                String
   storageSlots              String[]
+  receipts                  Receipt[]
   status__SqueezedOutStatus SqueezedOutStatus? @relation(fields: [squeezedOutStatusDb_id], references: [db_id])
   status__SubmittedStatus   SubmittedStatus?   @relation(fields: [submittedStatusDb_id], references: [db_id])
   status__FailureStatus     FailureStatus?     @relation(fields: [failureStatusDb_id], references: [db_id])

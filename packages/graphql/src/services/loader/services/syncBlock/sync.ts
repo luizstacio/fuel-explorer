@@ -12,7 +12,7 @@ const pool = workerpool.pool(
     maxWorkers: MAX_WORKERS,
     workerThreadOpts: {
       workerData: {
-        path: join(__dirname, "./services/syncBlock/syncBlockWorker.ts"),
+        path: join(__dirname, "./syncBlockWorker.ts"),
       },
     },
   }

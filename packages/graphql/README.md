@@ -130,3 +130,8 @@ query {
   }
 }
 ```
+
+## Missing features
+
+- [ ] Nested query, becasue the way we do includes is not possible to add includes for recursion ex.: -> Block -> transactions -> status -> Block.
+- [ ] Query only the fields on the graphql selection

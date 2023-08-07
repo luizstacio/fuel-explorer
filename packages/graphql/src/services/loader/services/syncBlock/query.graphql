@@ -1,169 +1,217 @@
-query ($height: String) {
-  block(height: $height) {
-    id
-    header {
-      height
-      daHeight
-      id
+fragment ContractFragment on Contract {
+  id
+  bytecode
+  salt
+}
+
+fragment StatusFragment on TransactionStatus {
+  type: __typename
+  ... on SubmittedStatus {
+    time
+  }
+  ... on SuccessStatus {
+    block {
+      ...BlockIdFragment
     }
-    consensus {
-      type: __typename
-      ... on PoAConsensus {
-        signature
-      }
-      ... on Genesis {
-        coinsRoot
-        contractsRoot
-        chainConfigHash
-      }
+    time
+    programState {
+      returnType
+      data
     }
-    transactions {
+  }
+  ... on FailureStatus {
+    block {
+      ...BlockIdFragment
+    }
+    time
+    reason
+    programState {
+      returnType
+      data
+    }
+  }
+}
+
+fragment OutputsFragment on Output {
+  type: __typename
+  ... on ChangeOutput {
+    amount
+    assetId
+    to
+  }
+  ... on CoinOutput {
+    amount
+    assetId
+    to
+  }
+  ... on ContractCreated {
+    contract {
+      ...ContractFragment
+    }
+    stateRoot
+  }
+  ... on ContractOutput {
+    balanceRoot
+    inputIndex
+    stateRoot
+  }
+  ... on MessageOutput {
+    amount
+    recipient
+  }
+  ... on VariableOutput {
+    amount
+    assetId
+    to
+  }
+}
+
+fragment InputsFragment on Input {
+  type: __typename
+  ... on InputCoin {
+    amount
+    assetId
+    maturity
+    owner
+    txPointer
+    utxoId
+    witnessIndex
+    predicate
+    predicateData
+  }
+  ... on InputContract {
+    balanceRoot
+    contract {
       id
-      inputAssetIds
-      inputContracts {
-        id
-        salt
-      }
-      gasPrice
-      gasLimit
-      maturity
-      txPointer
-      isScript
-      isCreate
-      isMint
-      inputs {
-        type: __typename
-        ... on InputCoin {
-          amount
-          assetId
-          maturity
-          owner
-          predicate
-          txPointer
-          utxoId
-          witnessIndex
-        }
-        ... on InputContract {
-          balanceRoot
-          contract {
-            id
-            salt
-          }
-          stateRoot
-          txPointer
-          utxoId
-        }
-        ... on InputMessage {
-          amount
-          data
-          messageId
-          nonce
-          predicate
-          predicateData
-          recipient
-          sender
-          witnessIndex
-        }
-      }
-      outputs {
-        type: __typename
-        ... on ChangeOutput {
-          amount
-          assetId
-          to
-        }
-        ... on CoinOutput {
-          amount
-          assetId
-          to
-        }
-        ... on ContractCreated {
-          contract {
-            id
-            salt
-          }
-          stateRoot
-        }
-        ... on ContractOutput {
-          balanceRoot
-          inputIndex
-          stateRoot
-        }
-        ... on MessageOutput {
-          amount
-          recipient
-        }
-        ... on VariableOutput {
-          amount
-          assetId
-          to
-        }
-      }
-      witnesses
-      receiptsRoot
-      status {
-        type: __typename
-        ... on SubmittedStatus {
-          time
-        }
-        ... on SuccessStatus {
-          block {
-            id
-          }
-          time
-          programState {
-            returnType
-            data
-          }
-        }
-        ... on FailureStatus {
-          block {
-            id
-          }
-          time
-          reason
-        }
-      }
-      receipts {
-        contract {
-          id
-          salt
-        }
-        pc
-        is
-        to {
-          id
-          salt
-        }
-        toAddress
-        amount
-        assetId
-        gas
-        param1
-        param2
-        val
-        ptr
-        digest
-        reason
-        ra
-        rb
-        rc
-        rd
-        len
-        receiptType
-        result
-        gasUsed
-        data
-        messageId
-        sender
-        recipient
-        nonce
-        contractId
-      }
-      bytecodeWitnessIndex
-      bytecodeLength
       salt
-      storageSlots
+      bytecode
     }
+    stateRoot
+    txPointer
+    utxoId
+  }
+  ... on InputMessage {
+    amount
+    data
+    messageId
+    nonce
+    recipient
+    sender
+    witnessIndex
+    predicate
+    predicateData
+  }
+}
+
+fragment ReceiptFragment on Receipt {
+  contract {
+    ...ContractFragment
+  }
+  pc
+  is
+  to {
+    ...ContractFragment
+  }
+  toAddress
+  amount
+  assetId
+  gas
+  param1
+  param2
+  val
+  ptr
+  digest
+  reason
+  ra
+  rb
+  rc
+  rd
+  len
+  receiptType
+  rawPayload
+  result
+  gasUsed
+  data
+  messageId
+  sender
+  recipient
+  nonce
+  contractId
+}
+
+fragment TransactionFragment on Transaction {
+  id
+  inputAssetIds
+  inputContracts {
+    ...ContractFragment
+  }
+  gasPrice
+  gasLimit
+  maturity
+  txPointer
+  isScript
+  isCreate
+  isMint
+  inputs {
+    ...InputsFragment
+  }
+  outputs {
+    ...OutputsFragment
+  }
+  witnesses
+  receiptsRoot
+  status {
+    ...StatusFragment
+  }
+  receipts {
+    ...ReceiptFragment
+  }
+  script
+  scriptData
+  bytecodeWitnessIndex
+  bytecodeLength
+  salt
+  storageSlots
+  rawPayload
+}
+
+fragment BlockIdFragment on Block {
+  id
+}
+
+fragment BlockFragment on Block {
+  id
+  header {
+    id
+    daHeight
+    transactionsCount
+    outputMessagesCount
+    transactionsRoot
+    outputMessagesRoot
+    height
+    prevRoot
+    time
+    applicationHash
+  }
+  consensus {
+    __typename
+    ... on Genesis {
+      chainConfigHash
+      coinsRoot
+      contractsRoot
+      messagesRoot
+    }
+    ... on PoAConsensus {
+      signature
+    }
+  }
+  transactions {
+    ...TransactionFragment
+  }
+}
+
+query ($height: U64) {
+  block(height: $height) {
+    ...BlockFragment
   }
 }

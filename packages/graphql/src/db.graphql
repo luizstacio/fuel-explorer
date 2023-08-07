@@ -19,10 +19,64 @@ type Contract {
   salt: Salt!
 }
 
+union Consensus = Genesis | PoAConsensus
+
+type PoAConsensus {
+  # Gets the signature of the block produced by `PoA` consensus.
+  signature: Signature!
+}
+
+type Genesis {
+  # The chain configs define what consensus type to use, what settlement layer to use,
+  # rules of block validity, etc.
+  chainConfigHash: Bytes32!
+
+  # The Binary Merkle Tree root of all genesis coins.
+  coinsRoot: Bytes32!
+
+  # The Binary Merkle Tree root of state, balances, contracts code hash of each contract.
+  contractsRoot: Bytes32!
+
+  # The Binary Merkle Tree root of all genesis messages.
+  messagesRoot: Bytes32!
+}
+
+type Header {
+  # Hash of the header
+  id: BlockId!
+
+  # The layer 1 height of messages and events to include since the last layer 1 block number.
+  daHeight: U64!
+
+  # Number of transactions in this block.
+  transactionsCount: U64!
+
+  # Number of output messages in this block.
+  outputMessagesCount: U64!
+
+  # Merkle root of transactions.
+  transactionsRoot: Bytes32!
+
+  # Merkle root of messages in this block.
+  outputMessagesRoot: Bytes32!
+
+  # Fuel block height.
+  height: U64!
+
+  # Merkle root of all previous block header hashes.
+  prevRoot: Bytes32!
+
+  # The block producer time.
+  time: Tai64Timestamp!
+
+  # Hash of the application header.
+  applicationHash: Bytes32!
+}
+
 type Block {
   id: BlockId!
-  #   header: Header!
-  #   consensus: Consensus!
+  header: Header!
+  consensus: Consensus!
   transactions: [Transaction!]!
 }
 
@@ -46,7 +100,7 @@ type Transaction {
   witnesses: [HexString!]
   receiptsRoot: Bytes32
   status: TransactionStatus
-  # receipts: [Receipt!]
+  receipts: [Receipt!]
   script: HexString
   scriptData: HexString
   bytecodeWitnessIndex: Int
@@ -190,6 +244,57 @@ type InputMessage {
   data: HexString!
   predicate: HexString!
   predicateData: HexString!
+}
+
+
+##########################################################
+## Transaction =>> Receipts
+##########################################################
+
+type Receipt {
+  contract: Contract
+  pc: U64
+  is: U64
+  to: Contract
+  toAddress: Address
+  amount: U64
+  assetId: AssetId
+  gas: U64
+  param1: U64
+  param2: U64
+  val: U64
+  ptr: U64
+  digest: Bytes32
+  reason: U64
+  ra: U64
+  rb: U64
+  rc: U64
+  rd: U64
+  len: U64
+  receiptType: ReceiptType!
+  rawPayload: HexString!
+  result: U64
+  gasUsed: U64
+  data: HexString
+  messageId: MessageId
+  sender: Address
+  recipient: Address
+  nonce: Bytes32
+  contractId: ContractId
+}
+
+enum ReceiptType {
+  CALL
+  RETURN
+  RETURN_DATA
+  PANIC
+  REVERT
+  LOG
+  LOG_DATA
+  TRANSFER
+  TRANSFER_OUT
+  SCRIPT_RESULT
+  MESSAGE_OUT
 }
 
 ##########################################################

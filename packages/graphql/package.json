@@ -6,7 +6,8 @@
   "author": "Fuel Labs <contact@fuel.sh> (https://fuel.network/)",
   "scripts": {
     "dev": "ts-node-dev -r tsconfig-paths/register --transpile-only --watch ./src/**/*, src/index.ts",
-    "dev:debug": "ts-node-dev -r tsconfig-paths/register --transpile-only --respawn --inspect=4321 --watch ./src/**/*, src/index.ts"
+    "dev:debug": "ts-node-dev -r tsconfig-paths/register --transpile-only --respawn --inspect=4321 --watch ./src/**/*, src/index.ts",
+    "prisma:reset": "pnpm prisma migrate reset --force && pnpm prisma migrate dev --name init && pnpm prisma generate"
   },
   "license": "Apache-2.0",
   "dependencies": {

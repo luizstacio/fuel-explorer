@@ -3,7 +3,6 @@ import { join } from "path";
 import { setTimeout } from "timers/promises";
 import { prisma } from "~/prisma";
 import { createGraphqlFetch } from "~/utils";
-import workerpool from "workerpool";
 
 type BlockReponse = {
   data: {
@@ -33,6 +32,7 @@ export async function syncBlock(height?: number) {
         height: height ? String(height) : undefined,
       },
     });
+    console.log(resp);
     const blockNode = resp.data.block;
 
     // Insert all the block on the page
@@ -47,11 +47,6 @@ export async function syncBlock(height?: number) {
       skipDuplicates: true,
     });
     console.log("Inserted", result.count, "blocks");
-
-    workerpool.workerEmit({
-      height,
-      status: "complete",
-    });
   } catch (err) {
     console.log(err);
     console.log("Try again in 10 seconds");
