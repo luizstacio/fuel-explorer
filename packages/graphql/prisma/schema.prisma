@@ -10,6 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ##########################################################
+// ## Block Requests
+// ##########################################################
+
+model BlockRequest {
+  db_id  Int     @id @default(autoincrement())
+  sync   Boolean
+  data   Json
+  height Int     @unique
+}
+
 model Contract {
   db_id            Int               @id @default(autoincrement())
   id               String            @unique
